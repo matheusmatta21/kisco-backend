@@ -21,11 +21,11 @@
 - [x] Preencher `app/constants.py`
 - [x] Preencher `app/config.py`
 - [x] Validar config com smoke test
-- [ ] Definir modelo `User` em `app/models.py`
-- [ ] Preencher `app/db.py` com engine e session
-- [ ] Preencher `app/main.py` mínimo com `/health`
-- [ ] Subir o servidor local
-- [ ] Confirmar criação automática do banco
+- [x] Definir modelo `User` em `app/models.py`
+- [x] Preencher `app/db.py` com engine e session
+- [x] Preencher `app/main.py` mínimo com `/health`
+- [x] Subir o servidor local
+- [x] Confirmar criação automática do banco
 
 ## Fase C — Cliente Spotify "burro"
 
