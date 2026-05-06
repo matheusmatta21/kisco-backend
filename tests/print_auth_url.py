@@ -2,7 +2,7 @@
 Imprime a URL de autorização do Spotify pra rodar o fluxo OAuth manualmente.
 
 Uso:
-    uv run python scripts/print_auth_url.py
+    uv run python tests/print_auth_url.py
 
 Depois: cole a URL no browser, autorize, copie o `code` da URL de redirect.
 """
