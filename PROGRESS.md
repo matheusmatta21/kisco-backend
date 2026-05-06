@@ -58,11 +58,11 @@
 
 ## Fase G — Endpoint `/users`
 
-- [ ] Criar router de usuários
-- [ ] Implementar listagem agregada de usuários
-- [ ] Registrar router no app
-- [ ] Configurar CORS
-- [ ] Validar shape do JSON
+- [x] Criar router de usuários
+- [x] Implementar listagem agregada de usuários
+- [x] Registrar router no app
+- [x] Configurar CORS
+- [x] Validar shape do JSON
 
 ## Fase H — Integração com frontend Next.js
 
