@@ -38,11 +38,11 @@
 
 ## Fase D — Rotas de auth
 
-- [ ] Criar router de autenticação
-- [ ] Implementar início do fluxo OAuth
-- [ ] Implementar callback do OAuth
-- [ ] Registrar router no app
-- [ ] Testar fluxo manual end-to-end
+- [x] Criar router de autenticação
+- [x] Implementar início do fluxo OAuth
+- [x] Implementar callback do OAuth
+- [x] Registrar router no app
+- [x] Testar fluxo manual end-to-end
 
 ## Fase E — Album discovery
 
@@ -52,9 +52,9 @@
 
 ## Fase F — Wrapper de token
 
-- [ ] Implementar wrapper com refresh e retry
-- [ ] Implementar busca de tracks do álbum por usuário
-- [ ] Tratar revogação de token no refresh
+- [x] Implementar wrapper com refresh e retry
+- [x] Implementar busca de tracks do álbum por usuário
+- [x] Tratar revogação de token no refresh
 
 ## Fase G — Endpoint `/users`
 
