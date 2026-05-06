@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.db import create_db_and_tables
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth
+from app.routes import auth, users
 from app.config import settings
 
 
@@ -28,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth")
+app.include_router(users.router, prefix="/users")
 
 
 @app.get("/health")
