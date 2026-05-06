@@ -29,12 +29,12 @@
 
 ## Fase C — Cliente Spotify "burro"
 
-- [ ] Implementar troca de code por tokens
-- [ ] Implementar refresh de access token
-- [ ] Implementar busca do perfil do usuário
-- [ ] Implementar busca do histórico recente
-- [ ] Garantir cliente puro sem deps internas
-- [ ] Smoke test manual de cada função
+- [x] Implementar troca de code por tokens
+- [x] Implementar refresh de access token
+- [x] Implementar busca do perfil do usuário
+- [x] Implementar busca do histórico recente
+- [x] Garantir cliente puro sem deps internas
+- [x] Smoke test manual de cada função
 
 ## Fase D — Rotas de auth
 
