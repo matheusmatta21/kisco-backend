@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field
 
-class User(SQLModel, table=True): 
+
+class User(SQLModel, table=True):
     spotify_id: str = Field(primary_key=True)
     display_name: str
     avatar_url: str | None
