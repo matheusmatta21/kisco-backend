@@ -86,10 +86,8 @@ async def main() -> None:
 
         items = recently_played.get("items", [])
         print(f"Recently-played: {len(items)} tracks no total.")
-        for i, item in enumerate(items[:5], start=1):
+        for i, item in enumerate(items[:50], start=1):
             _print_track(i, item)
-        if len(items) > 5:
-            print(f"  ... (+{len(items) - 5} omitidas)")
         print()
 
         matches = filter_tracks_by_album(recently_played, ALBUM_ID)

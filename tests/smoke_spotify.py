@@ -1,11 +1,11 @@
 """
 Smoke test manual do spotify_adapter.
 
-Pré-requisito: rodar `scripts/print_auth_url.py`, abrir a URL no browser,
+Pré-requisito: rodar `tests/print_auth_url.py`, abrir a URL no browser,
 autorizar, e copiar o `code` da URL de redirect.
 
 Uso:
-    uv run python scripts/smoke_spotify.py <code>
+    uv run python tests/smoke_spotify.py <code>
 """
 import asyncio
 import json
@@ -75,6 +75,6 @@ async def main(code: str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("uso: uv run python scripts/smoke_spotify.py <code>")
+        print("uso: uv run python tests/smoke_spotify.py <code>")
         sys.exit(1)
     asyncio.run(main(sys.argv[1]))
