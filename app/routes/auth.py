@@ -3,8 +3,9 @@ import secrets
 from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from itsdangerous import URLSafeSerializer, BadSignature
+from pydantic import BaseModel
 from sqlmodel import Session
 from urllib.parse import quote, urlencode
 
@@ -19,9 +20,22 @@ router = APIRouter(tags=["auth"])
 OAUTH_STATE_COOKIE = "oauth_state"
 STATE_COOKIE_MAX_AGE = 600  # 10min
 
+SESSION_COOKIE = "kisco_session"
+SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30  # 30 dias
+
 
 def _serializer() -> URLSafeSerializer:
     return URLSafeSerializer(settings.SESSION_SECRET, salt="oauth-state")
+
+
+def _session_serializer() -> URLSafeSerializer:
+    return URLSafeSerializer(settings.SESSION_SECRET, salt="kisco-session")
+
+
+class MeResponse(BaseModel):
+    spotify_id: str
+    display_name: str
+    avatar_url: str | None
 
 
 @router.get("/spotify")
@@ -34,6 +48,7 @@ async def start_spotify_auth():
         "redirect_uri": settings.SPOTIFY_REDIRECT_URI,
         "scope": SPOTIFY_SCOPES,
         "state": state,  # versão crua — Spotify devolve isso de volta
+        "show_dialog": "true",  # força tela de consentimento (permite trocar de conta)
     }
     authorize_url = f"{SPOTIFY_AUTHORIZE_URL}?{urlencode(params, quote_via=quote)}"
 
@@ -112,4 +127,48 @@ async def spotify_callback(
 
     redirect = RedirectResponse(url=settings.FRONTEND_URL, status_code=303)
     redirect.delete_cookie(OAUTH_STATE_COOKIE)
+    redirect.set_cookie(
+        key=SESSION_COOKIE,
+        value=_session_serializer().dumps(spotify_id),
+        max_age=SESSION_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=False,  # True em produção (HTTPS)
+        samesite="lax",
+    )
     return redirect
+
+
+@router.get("/me", response_model=MeResponse)
+async def get_me(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    signed = request.cookies.get(SESSION_COOKIE)
+    if not signed:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        spotify_id = _session_serializer().loads(signed)
+    except BadSignature:
+        resp = JSONResponse(status_code=401, content={"detail": "Invalid session"})
+        resp.delete_cookie(SESSION_COOKIE)
+        return resp
+
+    user = session.get(User, spotify_id)
+    if user is None:
+        resp = JSONResponse(status_code=401, content={"detail": "User not found"})
+        resp.delete_cookie(SESSION_COOKIE)
+        return resp
+
+    return MeResponse(
+        spotify_id=user.spotify_id,
+        display_name=user.display_name,
+        avatar_url=user.avatar_url,
+    )
+
+
+@router.post("/logout", status_code=204)
+async def logout():
+    response = Response(status_code=204)
+    response.delete_cookie(SESSION_COOKIE)
+    return response
