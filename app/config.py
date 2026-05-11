@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     LASTFM_REDIRECT_URI: str
 
     FRONTEND_URL: str
-    DATABASE_URL: str
+    # Default = SQLite local. Em prod, sobrescrever via .env com a connection
+    # string do Supabase (postgresql+psycopg://...).
+    DATABASE_URL: str = "sqlite:///./kisco.db"
     SESSION_SECRET: str
 
 

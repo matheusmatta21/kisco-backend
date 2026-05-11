@@ -18,7 +18,14 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+_env_prod = ROOT / ".env.prod"
+if _env_prod.exists():
+    from dotenv import load_dotenv
+    load_dotenv(_env_prod, override=True)
+    print(f"[smoke_lastfm] carregando vars de {_env_prod.name}")
 
 from app.lastfm_adapter import LastfmAPIError, get_recent_tracks, get_user_info
 
