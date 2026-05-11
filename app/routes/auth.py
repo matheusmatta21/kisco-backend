@@ -32,6 +32,14 @@ def _session_serializer() -> URLSafeSerializer:
     return URLSafeSerializer(settings.SESSION_SECRET, salt="kisco-session")
 
 
+def _cookie_security_kwargs() -> dict:
+    # Cross-site (Vercel → Fly) exige SameSite=None + Secure. Em dev (HTTP no
+    # 127.0.0.1) o browser rejeita Secure, então caímos pra Lax sem Secure.
+    if settings.FRONTEND_URL.startswith("https://"):
+        return {"secure": True, "samesite": "none"}
+    return {"secure": False, "samesite": "lax"}
+
+
 class MeResponse(BaseModel):
     provider: str
     provider_user_id: str
@@ -59,8 +67,7 @@ async def start_spotify_auth():
         value=signed_state,
         max_age=STATE_COOKIE_MAX_AGE,
         httponly=True,
-        secure=False,  # True em produção (HTTPS). Em dev usamos http://127.0.0.1
-        samesite="lax",  # "lax" permite redirect cross-site (Spotify → nosso callback)
+        **_cookie_security_kwargs(),
     )
     return redirect
 
@@ -128,14 +135,13 @@ async def spotify_callback(
     session.commit()
 
     redirect = RedirectResponse(url=settings.FRONTEND_URL, status_code=303)
-    redirect.delete_cookie(OAUTH_STATE_COOKIE)
+    redirect.delete_cookie(OAUTH_STATE_COOKIE, **_cookie_security_kwargs())
     redirect.set_cookie(
         key=SESSION_COOKIE,
         value=_session_serializer().dumps({"provider": "spotify", "id": spotify_id}),
         max_age=SESSION_COOKIE_MAX_AGE,
         httponly=True,
-        secure=False,  # True em produção (HTTPS)
-        samesite="lax",
+        **_cookie_security_kwargs(),
     )
     return redirect
 
@@ -155,13 +161,13 @@ async def get_me(
         provider_user_id = session_data.get("id")
     except BadSignature:
         resp = JSONResponse(status_code=401, content={"detail": "Invalid session"})
-        resp.delete_cookie(SESSION_COOKIE)
+        resp.delete_cookie(SESSION_COOKIE, **_cookie_security_kwargs())
         return resp
 
     user = session.get(User, (provider, provider_user_id))
     if user is None:
         resp = JSONResponse(status_code=401, content={"detail": "User not found"})
-        resp.delete_cookie(SESSION_COOKIE)
+        resp.delete_cookie(SESSION_COOKIE, **_cookie_security_kwargs())
         return resp
 
     return MeResponse(
@@ -175,7 +181,7 @@ async def get_me(
 @router.post("/logout", status_code=204)
 async def logout():
     response = Response(status_code=204)
-    response.delete_cookie(SESSION_COOKIE)
+    response.delete_cookie(SESSION_COOKIE, **_cookie_security_kwargs())
     return response
 
 @router.get("/lastfm")
@@ -209,7 +215,6 @@ async def lastfm_callback(token: str, db=Depends(get_session)):
         value=_session_serializer().dumps({"provider": "lastfm", "id": username}),
         max_age=SESSION_COOKIE_MAX_AGE,
         httponly=True,
-        secure=False,  # True em produção (HTTPS)
-        samesite="lax",
+        **_cookie_security_kwargs(),
     )
     return response
