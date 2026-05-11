@@ -1,0 +1,26 @@
+# Config do Fly.io. Nome do app precisa ser globalmente unico no Fly.
+# Troca "kisco-api" por algo unico (ex: "kisco-api-matheus") antes de rodar fly launch.
+app = "kisco-backend-api"
+
+# Sao Paulo. Latencia minima pros usuarios brasileiros.
+primary_region = "gru"
+
+[build]
+
+# HTTP service: porta interna do container e como o Fly expoe pra internet.
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Sempre ligado — o poller precisa rodar continuamente.
+  # Se um dia quiser economizar credito, troca pra "stop" e setar
+  # min_machines_running = 0, mas o poller para enquanto o container ta down.
+  auto_stop_machines = "off"
+  min_machines_running = 1
+  processes = ["app"]
+
+# Tamanho da VM. shared-cpu-1x com 256MB cabe folgado pro KISCO
+# e fica dentro do credito gratis de $5/mes.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1

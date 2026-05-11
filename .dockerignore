@@ -1,0 +1,24 @@
+# Nao copiar nada disso pra dentro da imagem.
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.ruff_cache
+.mypy_cache
+
+# Banco local de dev — NUNCA vai pra prod.
+kisco.db
+*.db-journal
+
+# Secrets — Fly usa "fly secrets set" pra env vars, nao copia .env.
+.env
+.env.*
+
+# Git e docs nao precisam dentro do container.
+.git
+.gitignore
+*.md
+
+# Testes nao rodam dentro da imagem de prod.
+tests

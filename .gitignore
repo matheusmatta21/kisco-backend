@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .env
+.env.prod
 *.db
 *.sqlite3
 .pytest_cache/
