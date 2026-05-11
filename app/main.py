@@ -1,15 +1,33 @@
-from fastapi import FastAPI
+import asyncio
+import logging
 from contextlib import asynccontextmanager
-from app.db import create_db_and_tables
+
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, users
+
 from app.config import settings
+from app.db import create_db_and_tables
+from app.poller import poller_loop
+from app.routes import auth, stats, users
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_db_and_tables()  # startup
-    yield
+    create_db_and_tables()
+    poller_task = asyncio.create_task(poller_loop(), name="poller_loop")
+    try:
+        yield
+    finally:
+        poller_task.cancel()
+        try:
+            await poller_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(
@@ -29,6 +47,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth")
 app.include_router(users.router, prefix="/users")
+app.include_router(stats.router, prefix="/stats")
 
 
 @app.get("/health")
