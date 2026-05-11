@@ -10,10 +10,10 @@ from sqlmodel import Session
 from urllib.parse import quote, urlencode
 
 from app.config import settings
-from app.constants import SPOTIFY_AUTHORIZE_URL, SPOTIFY_SCOPES
+from app.constants import LASTFM_AUTH_URL, SPOTIFY_AUTHORIZE_URL, SPOTIFY_SCOPES
 from app.db import get_session
-from app.models import User
-from app import spotify_adapter
+from app.models import Provider, User
+from app import lastfm_adapter, lastfm_for_user, spotify_adapter, spotify_for_user
 
 router = APIRouter(tags=["auth"])
 
@@ -33,7 +33,8 @@ def _session_serializer() -> URLSafeSerializer:
 
 
 class MeResponse(BaseModel):
-    spotify_id: str
+    provider: str
+    provider_user_id: str
     display_name: str
     avatar_url: str | None
 
@@ -105,10 +106,11 @@ async def spotify_callback(
     now = datetime.now(timezone.utc)
     token_expires_at = now + timedelta(seconds=expires_in)
 
-    user = session.get(User, spotify_id)
+    user = session.get(User, (Provider.SPOTIFY, spotify_id))
     if user is None:
         user = User(
-            spotify_id=spotify_id,
+            provider=Provider.SPOTIFY,
+            provider_user_id=spotify_id,
             display_name=display_name,
             avatar_url=avatar_url,
             access_token=access_token,
@@ -129,7 +131,7 @@ async def spotify_callback(
     redirect.delete_cookie(OAUTH_STATE_COOKIE)
     redirect.set_cookie(
         key=SESSION_COOKIE,
-        value=_session_serializer().dumps(spotify_id),
+        value=_session_serializer().dumps({"provider": "spotify", "id": spotify_id}),
         max_age=SESSION_COOKIE_MAX_AGE,
         httponly=True,
         secure=False,  # True em produção (HTTPS)
@@ -148,20 +150,23 @@ async def get_me(
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        spotify_id = _session_serializer().loads(signed)
+        session_data = _session_serializer().loads(signed)
+        provider = session_data.get("provider")
+        provider_user_id = session_data.get("id")
     except BadSignature:
         resp = JSONResponse(status_code=401, content={"detail": "Invalid session"})
         resp.delete_cookie(SESSION_COOKIE)
         return resp
 
-    user = session.get(User, spotify_id)
+    user = session.get(User, (provider, provider_user_id))
     if user is None:
         resp = JSONResponse(status_code=401, content={"detail": "User not found"})
         resp.delete_cookie(SESSION_COOKIE)
         return resp
 
     return MeResponse(
-        spotify_id=user.spotify_id,
+        provider=provider,
+        provider_user_id=user.provider_user_id,
         display_name=user.display_name,
         avatar_url=user.avatar_url,
     )
@@ -171,4 +176,40 @@ async def get_me(
 async def logout():
     response = Response(status_code=204)
     response.delete_cookie(SESSION_COOKIE)
+    return response
+
+@router.get("/lastfm")
+async def lastfm_login():
+    qs = urlencode({
+        "api_key": settings.LASTFM_API_KEY,
+        "cb": settings.LASTFM_REDIRECT_URI,
+    })
+    return RedirectResponse(f"{LASTFM_AUTH_URL}?{qs}", status_code=302)
+
+
+@router.get("/lastfm/callback")
+async def lastfm_callback(token: str, db=Depends(get_session)):
+    try:
+        data = await lastfm_adapter.exchange_token_for_session(token)
+    except lastfm_adapter.LastfmAPIError as e:
+        raise HTTPException(status_code=400, detail=f"Last.fm error {e.code}: {e.message}")
+
+    session = data["session"]
+    session_key = session["key"]
+    username = session["name"]
+
+    try:
+        user = await lastfm_for_user.upsert_user_from_session(db, session_key, username)
+    except lastfm_adapter.LastfmAPIError as e:
+        raise HTTPException(status_code=502, detail=f"Last.fm error {e.code}: {e.message}")
+
+    response = RedirectResponse(settings.FRONTEND_URL, status_code=302)
+    response.set_cookie(
+        key=SESSION_COOKIE,
+        value=_session_serializer().dumps({"provider": "lastfm", "id": username}),
+        max_age=SESSION_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=False,  # True em produção (HTTPS)
+        samesite="lax",
+    )
     return response

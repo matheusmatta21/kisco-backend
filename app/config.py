@@ -11,9 +11,15 @@ class Settings(BaseSettings):
     SPOTIFY_CLIENT_ID: str
     SPOTIFY_CLIENT_SECRET: str
     SPOTIFY_REDIRECT_URI: str
+
+    LASTFM_API_KEY: str
+    LASTFM_SHARED_SECRET: str
+    LASTFM_REDIRECT_URI: str
+
     FRONTEND_URL: str
     DATABASE_URL: str
     SESSION_SECRET: str
+
 
 
 settings = Settings()

@@ -704,39 +704,39 @@ Seguir nessa ordem. Cada passo é um commit lógico.
 
 ### Fase 1 — Setup (sem código de produção)
 
-- [ ] **1.1** Criar API account em https://www.last.fm/api/account/create (§3.1)
-- [ ] **1.2** Salvar `API Key` e `Shared Secret` no gerenciador de senhas
-- [ ] **1.3** Adicionar variáveis ao `.env` local (§3.3)
-- [ ] **1.4** Atualizar `.env.example`
-- [ ] **1.5** Adicionar `LASTFM_API_KEY`, `LASTFM_SHARED_SECRET`, `LASTFM_REDIRECT_URI` em `app/config.py` (§7.2)
-- [ ] **1.6** Adicionar constantes em `app/constants.py` (§7.3)
+- [x] **1.1** Criar API account em https://www.last.fm/api/account/create (§3.1)
+- [x] **1.2** Salvar `API Key` e `Shared Secret` no gerenciador de senhas
+- [x] **1.3** Adicionar variáveis ao `.env` local (§3.3)
+- [x] **1.4** Atualizar `.env.example`
+- [x] **1.5** Adicionar `LASTFM_API_KEY`, `LASTFM_SHARED_SECRET`, `LASTFM_REDIRECT_URI` em `app/config.py` (§7.2)
+- [x] **1.6** Adicionar constantes em `app/constants.py` (§7.3)
 
 ### Fase 2 — Modelo de dados
 
-- [ ] **2.1** Refatorar `app/models.py` pra Opção A (§7.4)
-- [ ] **2.2** Apagar `kisco.db` local (drop + recreate no startup)
-- [ ] **2.3** Atualizar todos os pontos do código que referenciam `User.spotify_id` direto pra usar `(provider, provider_user_id)`
-- [ ] **2.4** Atualizar `spotify_for_user.py` pra criar `User(provider="spotify", provider_user_id=spotify_id, ...)`
-- [ ] **2.5** Rodar smoke test do fluxo Spotify pra garantir que não quebrou
+- [x] **2.1** Refatorar `app/models.py` pra Opção A (§7.4)
+- [x] **2.2** Apagar `kisco.db` local (drop + recreate no startup)
+- [x] **2.3** Atualizar todos os pontos do código que referenciam `User.spotify_id` direto pra usar `(provider, provider_user_id)`
+- [x] **2.4** Atualizar `spotify_for_user.py` pra criar `User(provider="spotify", provider_user_id=spotify_id, ...)`
+- [x] **2.5** Rodar smoke test do fluxo Spotify pra garantir que não quebrou
 
 ### Fase 3 — Cliente Last.fm (camada burra)
 
-- [ ] **3.1** Criar `app/lastfm_adapter.py` com `_sign`, `exchange_token_for_session`, `get_user_info`, `get_recent_tracks` (§7.5)
-- [ ] **3.2** Escrever teste unitário pra `_sign` com vetores conhecidos (a docs do Last.fm tem exemplos)
-- [ ] **3.3** Testar `get_recent_tracks` manualmente com username público qualquer (ex: `rj` — conta de teste oficial do Last.fm)
+- [x] **3.1** Criar `app/lastfm_adapter.py` com `_sign`, `exchange_token_for_session`, `get_user_info`, `get_recent_tracks` (§7.5)
+- [x] **3.2** Escrever teste unitário pra `_sign` com vetores conhecidos (a docs do Last.fm tem exemplos)
+- [x] **3.3** Testar `get_recent_tracks` manualmente com username público qualquer (ex: `rj` — conta de teste oficial do Last.fm)
 
 ### Fase 4 — Service layer
 
-- [ ] **4.1** Criar `app/lastfm_for_user.py` com `upsert_user_from_session` e `fetch_recent_filtered` (§7.6)
-- [ ] **4.2** Adicionar tratamento de `error` no JSON (não basta status code) (§7.5 nota)
-- [ ] **4.3** Testar com user real fazendo scrobbling
+- [x] **4.1** Criar `app/lastfm_for_user.py` com `upsert_user_from_session` e `fetch_recent_filtered` (§7.6)
+- [x] **4.2** Adicionar tratamento de `error` no JSON (não basta status code) (§7.5 nota)
+- [x] **4.3** Testar com user real fazendo scrobbling
 
 ### Fase 5 — Rotas de auth
 
-- [ ] **5.1** Adicionar `/auth/lastfm` e `/auth/lastfm/callback` em `app/routes/auth.py` (§7.8)
-- [ ] **5.2** Reaproveitar mecanismo de cookie/session do Spotify
-- [ ] **5.3** (Opcional) Implementar CSRF state via cookie assinado com `itsdangerous` (§4.2 nota)
-- [ ] **5.4** Smoke test end-to-end: clicar no botão → autorizar Last.fm → voltar → ver cookie → ver row no DB
+- [x] **5.1** Adicionar `/auth/lastfm` e `/auth/lastfm/callback` em `app/routes/auth.py` (§7.8)
+- [x] **5.2** Reaproveitar mecanismo de cookie/session do Spotify
+- [x] **5.3** (Opcional) Implementar CSRF state via cookie assinado com `itsdangerous` (§4.2 nota)
+- [x] **5.4** Smoke test end-to-end: clicar no botão → autorizar Last.fm → voltar → ver cookie → ver row no DB
 
 ### Fase 6 — Endpoint de users
 

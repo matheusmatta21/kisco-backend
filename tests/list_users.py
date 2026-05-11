@@ -33,7 +33,8 @@ def main() -> None:
 
     print(f"Total de usuários: {len(users)}\n")
     for i, user in enumerate(users, start=1):
-        print(f"[{i}] spotify_id       : {user.spotify_id}")
+        print(f"[{i}] provider_user_id : {user.provider_user_id}")
+        print(f"    provider         : {user.provider}")
         print(f"    display_name     : {user.display_name}")
         print(f"    token_expires_at : {user.token_expires_at}")
         print(f"    access_token     : {_trunc(user.access_token)}")

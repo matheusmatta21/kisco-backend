@@ -52,7 +52,7 @@ async def main() -> None:
             print("Nenhum usuario no banco. Faca login via /auth/spotify primeiro.")
             return
 
-        print(f"User alvo: {user.spotify_id} ({user.display_name})")
+        print(f"User alvo: {user.provider_user_id} ({user.display_name})")
         print(f"  token_expires_at (antes): {user.token_expires_at}")
         print(f"  access_token    (antes): {_trunc(user.access_token)}")
         print()

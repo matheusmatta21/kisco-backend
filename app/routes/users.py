@@ -1,16 +1,13 @@
 import asyncio
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
-from app.constants import ALBUM_ID, TRACKS_PER_USER
+from app.constants import TRACKS_PER_USER
 from app.db import get_session
 from app.models import User
-from app.spotify_for_user import (
-    TokenRevokedError,
-    filter_tracks_by_album,
-    get_recently_played_for_user,
-)
+from app.providers import PROVIDERS
 
 
 class TrackOut(BaseModel):
@@ -22,7 +19,8 @@ class TrackOut(BaseModel):
 
 
 class UserOut(BaseModel):
-    spotify_id: str
+    provider: str
+    provider_user_id: str
     display_name: str
     avatar_url: str | None
     tracks: list[TrackOut]
@@ -35,29 +33,21 @@ class UsersResponse(BaseModel):
 router = APIRouter(tags=["users"])
 
 
-def _format_track(item: dict) -> dict:
-    track = item["track"]
-    images = track["album"].get("images") or []
-    return {
-        "name": track["name"],
-        "artists": [artist["name"] for artist in track.get("artists", [])],
-        "played_at": item["played_at"],
-        "album_name": track["album"]["name"],
-        "image_url": images[0]["url"] if images else None,
-    }
-
-
 async def _build_user_payload(session: Session, user: User) -> dict | None:
-    try:
-        played = await get_recently_played_for_user(session, user)
-    except TokenRevokedError:
-        return None
-    matches = filter_tracks_by_album(played, ALBUM_ID)[:TRACKS_PER_USER]
+    provider = PROVIDERS.get(user.provider)
+    if provider is None:
+        return None  # provider desconhecido — ignora silenciosamente
+
+    tracks = await provider.fetch_recent_for_album(session, user, TRACKS_PER_USER)
+    if tracks is None:
+        return None  # provider sinalizou que o user esta quebrado (ex: token revogado)
+
     return {
-        "spotify_id": user.spotify_id,
+        "provider": user.provider,
+        "provider_user_id": user.provider_user_id,
         "display_name": user.display_name,
         "avatar_url": user.avatar_url,
-        "tracks": [_format_track(item) for item in matches],
+        "tracks": tracks,
     }
 
 
