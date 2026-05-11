@@ -19,7 +19,7 @@ async def _refresh_and_persist(session: Session, user: User) -> None:
         new_tokens = await spotify_adapter.refresh_access_token(user.refresh_token)
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 400:
-            raise TokenRevokedError(user.spotify_id) from e
+            raise TokenRevokedError(user.provider_user_id) from e
         raise
 
     now = datetime.now(timezone.utc)
