@@ -29,4 +29,6 @@ ARTIST_NAME_LASTFM = "Harry Styles"
 TRACKS_PER_USER = 5
 
 # Scheduler do poller de plays (fase 10)
-POLL_INTERVAL_SECONDS = 15 * 60  # 15 minutos
+# 5min: balanco entre frescor (lag maximo de 5min entre play e /stats refletir)
+# e custo de quota nas APIs. Pra app de 6 amigos cabe folgado nos rate limits.
+POLL_INTERVAL_SECONDS = 5 * 60  # 5 minutos

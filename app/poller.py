@@ -128,6 +128,15 @@ async def poll_all_users() -> None:
 
     total_inserted = sum(r for r in results if isinstance(r, int))
     failures = [r for r in results if isinstance(r, Exception)]
+    # Log o exception real de cada falha — gather(return_exceptions=True) engole
+    # o traceback se a gente so contar. Sem isso, depurar "porque tal play nao
+    # entrou" vira advinhacao.
+    for user, result in zip(users, results):
+        if isinstance(result, Exception):
+            logger.error(
+                "poll_all_users: user provider=%s id=%s falhou: %r",
+                user.provider, user.provider_user_id, result,
+            )
     logger.info(
         "poll_all_users: users=%d inserted=%d failures=%d",
         len(users), total_inserted, len(failures),
